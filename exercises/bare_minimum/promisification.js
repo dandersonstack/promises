@@ -2,11 +2,11 @@
  * Create the promise returning `Async` suffixed versions of the functions below,
  * Promisify them if you can, otherwise roll your own promise returning function
  */ 
-
+var Promise = require('bluebird');
 var fs = require('fs');
 var request = require('request');
 var crypto = require('crypto');
-var Promise = require('bluebird');
+
 
 // (1) Asyncronous HTTP request
 var getGitHubProfile = function(user, callback) {
@@ -15,7 +15,6 @@ var getGitHubProfile = function(user, callback) {
     headers: { 'User-Agent': 'request' },
     json: true  // will JSON.parse(body) for us
   };
-
   request.get(options, function(err, res, body) {
     if (err) {
       callback(err, null);
@@ -24,10 +23,20 @@ var getGitHubProfile = function(user, callback) {
     } else {
       callback(null, body);
     }
-  });
+  }); 
 };
 
-var getGitHubProfileAsync; // TODO
+var getGitHubProfileAsync = (user) => {
+  return new Promise((resolve, reject) => {
+    getGitHubProfile(user, (err, body) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(body);
+      }
+    });
+  });
+};
 
 
 // (2) Asyncronous token generation
@@ -38,13 +47,23 @@ var generateRandomToken = function(callback) {
   });
 };
 
-var generateRandomTokenAsync; // TODO
+var generateRandomTokenAsync = () => {
+  return new Promise((resolve, reject) => {
+    generateRandomToken((err, buffer) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(buffer);
+      }
+    });
+  });
+}; // TODO
 
 
 // (3) Asyncronous file manipulation
 var readFileAndMakeItFunny = function(filePath, callback) {
   fs.readFile(filePath, 'utf8', function(err, file) {
-    if (err) { return callback(err); }
+    if (err) { return callback(err, file); }
    
     var funnyFile = file.split('\n')
       .map(function(line) {
@@ -52,11 +71,20 @@ var readFileAndMakeItFunny = function(filePath, callback) {
       })
       .join('\n');
 
-    callback(funnyFile);
+    callback(err, funnyFile);
   });
 };
 
-var readFileAndMakeItFunnyAsync; // TODO
+var readFileAndMakeItFunnyAsync = (filePath, callback) => {
+  return new Promise((resolve, reject)=> {
+    readFileAndMakeItFunny(filePath, (err, file) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(file);
+    });
+  });
+}; // TODO
 
 // Export these functions so we can test them and reuse them in later exercises
 module.exports = {

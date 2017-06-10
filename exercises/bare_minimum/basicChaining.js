@@ -17,23 +17,32 @@ var promisification = require('./promisification.js');
 
 
 var fetchProfileAndWriteToFile = function(readFilePath, writeFilePath) {
-  return promiseConstructor.pluckFirstLineFromFileAsync(readFilePath)
-    .then( (data) => {
-      promisification.getGitHubProfileAsync(data)
-        .then((body)=>{
-          console.log(JSON.stringify(body));
-          fs.writeFileAsync(writeFilePath, JSON.stringify(body))
-            .catch((err) => {
-              console.log('Error writing the file: ', err);
-            });
-        })
-        .catch((err) => {
-          console.log('Error getting Github Profile: ', err);
-        });
-    })
-    .catch((err) => {
-      console.log('Error plucking first line: ', err);
-    });
+  return new Promise((resolve, reject) => {
+    promiseConstructor.pluckFirstLineFromFileAsync(readFilePath)
+      .then( (data) => {
+        promisification.getGitHubProfileAsync(data)
+          .then((body)=>{
+            console.log(JSON.stringify(body));
+            fs.writeFileAsync(writeFilePath, JSON.stringify(body))
+              .then(() => {
+                resolve();
+              })
+              .catch((err) => {
+                console.log('Error writing the file: ', err);
+                reject(err);
+              });
+          })
+          .catch((err) => {
+            console.log('Error getting Github Profile: ', err);
+            reject(err);
+          });
+      })
+      .catch((err) => {
+        console.log('Error plucking first line: ', err);
+        reject(err);
+      });
+
+  });
 };
 
 // Export these functions so we can test them

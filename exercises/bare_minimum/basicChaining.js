@@ -17,7 +17,7 @@ var promisification = require('./promisification.js');
 
 
 var fetchProfileAndWriteToFile = (readFilePath, writeFilePath) => {
-
+  console.log('this does not work');
 };
 
 // Export these functions so we can test them
